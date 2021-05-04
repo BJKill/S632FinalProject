@@ -51,19 +51,20 @@ colnames(county_vaccc_sums)[1] <- "LOCATION_ID"
 # merge aggregated vaccine numbers with our big data set
 big_data2 <- merge(big_data, county_vaccc_sums, by = "LOCATION_ID")
 
-# read in county population data
+# read in county population data $ rearrange rows to line up alphabetically
 cnty_pop <- read_csv("csvData.csv")
 cnty_pop <- cnty_pop[order(cnty_pop$CTYNAME), ]
 head(cnty_pop)
 cnty_pop2 <- rbind(cnty_pop[1:70, ], cnty_pop[74, ], cnty_pop[71:73, ], cnty_pop[75:92, ])
 
-
+# merge county pop data with data set $ create proportion variables
 big_data2 <- cbind(big_data2, cnty_pop2$pop2021)
 head(big_data2)
 colnames(big_data2)[13] <- "pop2021"
 big_data2$prop_cases <- big_data2$COVID_COUNT/big_data2$pop2021
 big_data2$prop_death <- big_data2$COVID_DEATHS/big_data2$pop2021
 
+# read in data on IN residents 65+, merge it, and create proportion variables
 IN65plus <- read_csv("idwd_data_31.csv")
 IN65plus$fips <- IN65plus$statefips*1000 + IN65plus$countyfips
 
@@ -95,18 +96,60 @@ big_data3$ClintProp <- big_data3$ClintVote / big_data3$TotalVote
 big_data3$TrmpProp <- big_data3$TrmpVote / big_data3$TotalVote 
 big_data3$OtherProp <- big_data3$OtherVote / big_data3$TotalVote
 
+MetroCodes2013 <- read_excel("NCHSURCodes2013.xlsx", 
+    col_types = c("numeric", "text", "skip", 
+        "skip", "skip", "skip", "numeric", 
+        "skip", "skip"))
+
+MC2013 <- filter(MetroCodes2013, MetroCodes2013$`State Abr.`== "IN")
+MC2013$`2013 code` <- as.factor(MC2013$`2013 code`)
+MC2013 <- MC2013[, -2]
+colnames(MC2013)[1] <- "LOCATION_ID"
+
+big_data3 <- merge(big_data3, MC2013, by = "LOCATION_ID")
 
 
+# Excluded ID variables, excluded 'Other' voting categories bc they are perfect
+# linear combos of Trmp&Clint categories - same with TotalVote, COVID_COUNT and COVID_TEST would be
+# highly correlated with pop2021
+mod0 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ 1, data = big_data3, family = binomial)
+
+
+mod0.1 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ . -LOCATION_ID  - COUNTY_NAME - prop_death - OtherProp - OtherVote, data = big_data3, family = binomial)
+summary(mod0.1)
+step(mod0, scope = list(lower = mod0, upper = mod0.1), direction = "both")
+
+mod0.2 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + COVID_COUNT, family = binomial, 
+    data = big_data3)
+
+summary(mod0.2)
+drop1(mod0.2, test = "Chi")
+
+
+plot(mod0.2)
+(expvact <- data.frame(LOCATION_ID = big_data3$LOCATION_ID, COUNTY_NAME = big_data3$COUNTY_NAME, Predicted_Deaths = round(mod0.2$fitted.values*big_data3$pop2021,2), Actual_Deaths = big_data3$COVID_DEATHS))
+
+```
+
+
+
+```{r, tidy=TRUE}
 mod1 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ . -LOCATION_ID - COVID_COUNT - COVID_TEST - COUNTY_NAME - prop_death - TotalVote - OtherProp - `Older (65 plus)` - fully_vaccinated - OtherVote, data = big_data3, family = binomial)
 summary(mod1)
 sumary(mod1)
 step(mod1, direction = "backward")
+drop1(mod1)
+plot(fitted(mod1),residuals(mod1)); abline(0,0)
+qqnorm(residuals(mod1)); qqline(residuals(mod1))
 
+# keep everything? maybe over-dispersed?
 sigma2 <- sum(residuals(mod1, type = "pearson")^2)/(92-13)
 summary(mod1, dispersion = sigma2)
 drop1(mod1, scale = sigma2, test = "F")
 
-mod0 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ 1, data = big_data3, family = binomial)
+
 step(mod0, scope = list(lower = mod0, upper = mod1), direction = "forward")
 step(mod0, scope = list(lower = mod0, upper = mod1), direction = "both")
 ```
@@ -145,6 +188,8 @@ The model fits sufficiently well. The best predictors of COVID death counts in a
 
 
 ```{r, tidy=TRUE}
+
+
 big_data3$cntySize <- numeric(length = 92)
 big_data3$cntySize[which(big_data3$pop2021 < 20000)] <- "Small"
 big_data3$cntySize[which((big_data3$pop2021 > 20000)&(big_data3$pop2021 < 60000))] <- "Medium"
@@ -152,10 +197,10 @@ big_data3$cntySize[which(big_data3$pop2021 > 60000)] <- "Large"
 big_data3$cntySize <- as.factor(big_data3$cntySize)
 
 big_data3$cntyPol <- numeric(length = 92)
-big_data3$cntyPol[which(big_data3$TrmpProp > 0.65)] <- "StrongRep"
-big_data3$cntyPol[which((big_data3$TrmpProp < 0.65)&(big_data3$TrmpProp > 0.5))] <- "LeanRep"
-big_data3$cntyPol[which(big_data3$ClintProp > 0.65)] <- "StrongDem"
-big_data3$cntyPol[which((big_data3$ClintProp < 0.65)&(big_data3$ClintProp > 0.5))] <- "LeanDem"
+big_data3$cntyPol[which(big_data3$TrmpProp > 0.6)] <- "StrongRep"
+big_data3$cntyPol[which((big_data3$TrmpProp < 0.6)&(big_data3$TrmpProp > 0.5))] <- "LeanRep"
+big_data3$cntyPol[which(big_data3$ClintProp > 0.6)] <- "StrongDem"
+big_data3$cntyPol[which((big_data3$ClintProp < 0.6)&(big_data3$ClintProp > 0.5))] <- "LeanDem"
 big_data3$cntyPol[which((big_data3$ClintProp < 0.5)&(big_data3$TrmpProp < 0.5))] <- "Independent"
 big_data3$cntyPol <- as.factor(big_data3$cntyPol)
 
