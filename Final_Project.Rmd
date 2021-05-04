@@ -1,0 +1,229 @@
+---
+title: "Final Project"
+author: "Brandon Kill & Dayton Stahl"
+date: "5/2/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(readxl)
+library(tidyverse)
+library(mgcv)
+library(lme4)
+library(ggplot2)
+library(RLRsim)
+library(faraway)
+```
+
+```{r, tidy=TRUE}
+# read in data and re-name FIPS variable for merging.
+mask_data <- read.csv("mask_data.txt")
+covid_report_county <- read.csv("covid_report_county.csv")
+colnames(mask_data)[1] <- "LOCATION_ID"
+
+big_data <- merge(covid_report_county,mask_data, by = "LOCATION_ID")
+
+# read in data and removed non-residents
+cnty_vac_dem <- read_excel("county-vaccination-demographics.xlsx")
+cnty_vac_dem <- cnty_vac_dem[1:460, ]
+
+## aggregate vaccines across demographics
+county_vaccc_sums <- data.frame(all_doses_administered = vector(length = 92), 
+                      fully_vaccinated = vector(length = 92))
+
+cnty_vac_dem$all_doses_administered[which(cnty_vac_dem$all_doses_administered=="Suppressed")] <- 0
+cnty_vac_dem$fully_vaccinated[which(cnty_vac_dem$fully_vaccinated=="Suppressed")] <- 0
+
+cnty_vac_dem$all_doses_administered <- as.numeric(cnty_vac_dem$all_doses_administered)
+cnty_vac_dem$fully_vaccinated <- as.numeric(cnty_vac_dem$fully_vaccinated)
+
+for (i in 1:92) {
+  temp_df <- data.frame(all_doses_administered = numeric(), 
+                        fully_vaccinated = numeric())
+  temp_df <- colSums(cnty_vac_dem[(((i-1)*5+1):(i*5)), c(8,9)])
+  county_vaccc_sums[i, ] <- temp_df
+}
+county_vaccc_sums <- cbind(big_data$LOCATION_ID, county_vaccc_sums)
+colnames(county_vaccc_sums)[1] <- "LOCATION_ID"
+
+# merge aggregated vaccine numbers with our big data set
+big_data2 <- merge(big_data, county_vaccc_sums, by = "LOCATION_ID")
+
+# read in county population data
+cnty_pop <- read_csv("csvData.csv")
+cnty_pop <- cnty_pop[order(cnty_pop$CTYNAME), ]
+head(cnty_pop)
+cnty_pop2 <- rbind(cnty_pop[1:70, ], cnty_pop[74, ], cnty_pop[71:73, ], cnty_pop[75:92, ])
+
+
+big_data2 <- cbind(big_data2, cnty_pop2$pop2021)
+head(big_data2)
+colnames(big_data2)[13] <- "pop2021"
+big_data2$prop_cases <- big_data2$COVID_COUNT/big_data2$pop2021
+big_data2$prop_death <- big_data2$COVID_DEATHS/big_data2$pop2021
+
+IN65plus <- read_csv("idwd_data_31.csv")
+IN65plus$fips <- IN65plus$statefips*1000 + IN65plus$countyfips
+
+big_data2 <- cbind(big_data2, IN65plus[5])
+big_data2$olderprop <- big_data2$`Older (65 plus)` / big_data2$pop2021
+```
+
+
+## Can mask wearing be used to reliably predict the number if of positive cases in county.  Using binomial count model.
+
+```{r, tidy=TRUE}
+pres_votes <- read_csv("pres_votes.csv")
+colnames(pres_votes)[2] <- "LOCATION_ID"
+
+big_data3 <- big_data2
+big_data3$ClintVote <- numeric(length = 92)
+big_data3$TrmpVote <- numeric(length = 92) 
+big_data3$OtherVote <- numeric(length = 92)
+big_data3$TotalVote <- numeric(length = 92)
+
+for (i in 1:92) {
+  big_data3$ClintVote[i] <- pres_votes$candidatevotes[(i-1)*3 +1]
+  big_data3$TrmpVote[i] <- pres_votes$candidatevotes[(i-1)*3 +2]
+  big_data3$OtherVote[i] <- pres_votes$candidatevotes[(i-1)*3 +3]
+  big_data3$TotalVote[i] <- pres_votes$totalvotes[(i-1)*3 +1]
+}
+
+big_data3$ClintProp <- big_data3$ClintVote / big_data3$TotalVote
+big_data3$TrmpProp <- big_data3$TrmpVote / big_data3$TotalVote 
+big_data3$OtherProp <- big_data3$OtherVote / big_data3$TotalVote
+
+
+
+mod1 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ . -LOCATION_ID - COVID_COUNT - COVID_TEST - COUNTY_NAME - prop_death - TotalVote - OtherProp - `Older (65 plus)` - fully_vaccinated - OtherVote, data = big_data3, family = binomial)
+summary(mod1)
+sumary(mod1)
+step(mod1, direction = "backward")
+
+sigma2 <- sum(residuals(mod1, type = "pearson")^2)/(92-13)
+summary(mod1, dispersion = sigma2)
+drop1(mod1, scale = sigma2, test = "F")
+
+mod0 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ 1, data = big_data3, family = binomial)
+step(mod0, scope = list(lower = mod0, upper = mod1), direction = "forward")
+step(mod0, scope = list(lower = mod0, upper = mod1), direction = "both")
+```
+
+
+```{r, tidy=TRUE}
+mod2 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + TrmpProp + ClintProp + SOMETIMES + TrmpVote + 
+    RARELY, family = binomial, data = big_data3)
+summary(mod2)
+
+mod3 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + ClintVote + TrmpProp + ClintProp + SOMETIMES + 
+    TrmpVote + RARELY + all_doses_administered + NEVER, family = binomial, 
+    data = big_data3)
+summary(mod3)
+
+anova(mod2, mod3, test = "Chi")
+```
+H0: Small model is fine
+H1: Larger model is better
+
+Fail to reject H0.  Stick with `mod2`
+
+
+```{r}
+plot(mod2)
+anova(mod0, mod2, test = "Chi")
+summary(mod2)
+```
+A couple high-leverage counties, but residuals are normally distributed, homoscedatic, with no obvious patterns, leading us to believe the model is a decent fit. Our model is better than the Null, so keep it.
+
+The model fits sufficiently well. The best predictors of COVID death counts in an Indiana county appear to be the proportion of the population that is older than 65, the proportion of people in the county to test positive, and the number of people in the county who voted for Donald Trump in the 2016 election.
+
+
+
+
+```{r, tidy=TRUE}
+big_data3$cntySize <- numeric(length = 92)
+big_data3$cntySize[which(big_data3$pop2021 < 20000)] <- "Small"
+big_data3$cntySize[which((big_data3$pop2021 > 20000)&(big_data3$pop2021 < 60000))] <- "Medium"
+big_data3$cntySize[which(big_data3$pop2021 > 60000)] <- "Large"
+big_data3$cntySize <- as.factor(big_data3$cntySize)
+
+big_data3$cntyPol <- numeric(length = 92)
+big_data3$cntyPol[which(big_data3$TrmpProp > 0.65)] <- "StrongRep"
+big_data3$cntyPol[which((big_data3$TrmpProp < 0.65)&(big_data3$TrmpProp > 0.5))] <- "LeanRep"
+big_data3$cntyPol[which(big_data3$ClintProp > 0.65)] <- "StrongDem"
+big_data3$cntyPol[which((big_data3$ClintProp < 0.65)&(big_data3$ClintProp > 0.5))] <- "LeanDem"
+big_data3$cntyPol[which((big_data3$ClintProp < 0.5)&(big_data3$TrmpProp < 0.5))] <- "Independent"
+big_data3$cntyPol <- as.factor(big_data3$cntyPol)
+
+big_data3$COUNTY_NAME <- as.factor(big_data3$COUNTY_NAME)
+```
+
+
+
+```{r, tidy=TRUE, eval=FALSE}
+mod4 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + TrmpProp + ClintProp + SOMETIMES + TrmpVote + 
+    RARELY + cntySize + cntyPol, family = binomial, data = big_data3)
+summary(mod4)
+step(mod0, scope = list(lower = mod0, upper = mod4), direction = "both")
+
+mod5 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    #prop_cases + TrmpVote + SOMETIMES + cntySize + TrmpProp + 
+    #ClintProp, family = binomial, data = big_data3)
+summary(mod5)
+drop1(mod5, test = "Chi")
+anova(mod2, mod5, test = "Chi")
+plot(mod5)
+```
+
+Improved model by adding cntySize factor variable and removing RARELY.
+
+```{r, tidy=TRUE, eval=FALSE}
+# predicted and actual death tolls by county ID#
+cbind(big_data3$LOCATION_ID, round(mod5$fitted.values*big_data3$pop2021,2), big_data3$COVID_DEATHS)
+```
+
+
+```{r, tidy=TRUE}
+mod6 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + SOMETIMES + cntySize + TrmpProp + 
+    ClintProp + (1|COUNTY_NAME), family = binomial, data = big_data3,
+    control=glmerControl(optimizer="bobyqa"))
+summary(mod6)
+
+mod6.0 <- glmer(cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1 + (1|COUNTY_NAME),
+                family = binomial, data = big_data3)
+
+anova(mod6.0, mod6)
+drop1(mod6, test = "Chi")
+qqnorm(residuals(mod6));qqline(residuals(mod6))
+
+1-pchisq(abs(deviance(mod6)-deviance(mod2)), abs(df.residual(mod6)-df.residual(mod2)))
+## model with random effects is better fit than model without random effects
+
+mod7 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + cntySize + TrmpProp + 
+    ClintProp + (1|COUNTY_NAME), family = binomial, data = big_data3,
+    control=glmerControl(optimizer="bobyqa"))
+
+summary(mod7)
+
+anova(mod7, mod6)
+
+
+drop1(mod7, test = "Chi")
+## keep mod7
+```
+
+
+
+
+
+
+
+
+

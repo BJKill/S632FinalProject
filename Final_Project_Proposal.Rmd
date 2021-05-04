@@ -1,0 +1,25 @@
+---
+title: "Final Project Proposal"
+author: "Brandon Kill and Dayton Stahl"
+date: "4/15/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Research Question
+We are interested in predicting numerous COVID-19 statistics for counties in Indiana based on many different possible predictors. The response variables that we are most interested in are the rate of cases and rate of death (either per-person or per-100,000 people) in each county.  The response data will come from coronavirus.in.gov.  The primary goal of the study is to determine which explanatory variables are the most significant in predicting cases and deaths from COVID-19 in Indiana.
+
+
+# Data
+For our predictor variables, we plan on using a wide range of demographic data, such as age, race, political affiliation, income, poverty levels, and many other population descriptors that can be obtained from data.census.gov. Another predictor variable that we would like to get a hold of is the percentage of the senior-citizen population residing in long-term care facilities (LTCs) in each county.  We would also love to see a breakdown by county of the primary news sources of the residents.  
+
+Additionally, we plan on using data gathered by the *New York Times* that is also broken down by county.  The most interesting predictor we found here, at first glance at least, is the frequency with which residents in each county wear masks. The mask-wearing data from the *New York Times* is broken down into ordinal categories "Never", "Rarely", "Sometimes", "Frequently", and "Always".  We are quite curious to see how mask wearing tracks with case and death rates from COVID-19 for counties in Indiana.
+
+# Methods
+First, we'll have to merge multiple data sets by county FIPS code. Then, we have some decisions to make.  We can either make the response variables cases and deaths per person (to make them proportions), or use total cases and total deaths and create a binomial count model based on the population of each county. 
+
+We will use a mixed-effects model with County as a random effect to start, and possibly other random and nested effects to go along with it. The best candidate we have for nested effects is mask wearing nested within county. A quick glance at the mask-wearing data shows that mask-wearing factor levels vary greatly between county factor levels, indicating that mask-wearing is nested within each county.
+

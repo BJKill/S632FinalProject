@@ -1,0 +1,277 @@
+county,FIPS,office,candidate,party,candidatevotes,totalvotes
+Adams,18001,President,Hillary Clinton,democrat,2805,13090
+Adams,18001,President,Donald Trump,republican,9648,13090
+Adams,18001,President,Other,NA,637,13090
+Allen,18003,President,Hillary Clinton,democrat,55382,147137
+Allen,18003,President,Donald Trump,republican,83930,147137
+Allen,18003,President,Other,NA,7825,147137
+Bartholomew,18005,President,Hillary Clinton,democrat,9841,32490
+Bartholomew,18005,President,Donald Trump,republican,20640,32490
+Bartholomew,18005,President,Other,NA,2009,32490
+Benton,18007,President,Hillary Clinton,democrat,860,3666
+Benton,18007,President,Donald Trump,republican,2579,3666
+Benton,18007,President,Other,NA,227,3666
+Blackford,18009,President,Hillary Clinton,democrat,1243,4839
+Blackford,18009,President,Donald Trump,republican,3350,4839
+Blackford,18009,President,Other,NA,246,4839
+Boone,18011,President,Hillary Clinton,democrat,10181,32178
+Boone,18011,President,Donald Trump,republican,19654,32178
+Boone,18011,President,Other,NA,2343,32178
+Brown,18013,President,Hillary Clinton,democrat,2518,7945
+Brown,18013,President,Donald Trump,republican,5016,7945
+Brown,18013,President,Other,NA,411,7945
+Carroll,18015,President,Hillary Clinton,democrat,1892,8643
+Carroll,18015,President,Donald Trump,republican,6273,8643
+Carroll,18015,President,Other,NA,478,8643
+Cass,18017,President,Hillary Clinton,democrat,3759,14209
+Cass,18017,President,Donald Trump,republican,9701,14209
+Cass,18017,President,Other,NA,749,14209
+Clark,18019,President,Hillary Clinton,democrat,18808,51147
+Clark,18019,President,Donald Trump,republican,30035,51147
+Clark,18019,President,Other,NA,2304,51147
+Clay,18021,President,Hillary Clinton,democrat,2306,11282
+Clay,18021,President,Donald Trump,republican,8531,11282
+Clay,18021,President,Other,NA,445,11282
+Clinton,18023,President,Hillary Clinton,democrat,2819,11936
+Clinton,18023,President,Donald Trump,republican,8531,11936
+Clinton,18023,President,Other,NA,586,11936
+Crawford,18025,President,Hillary Clinton,democrat,1323,4593
+Crawford,18025,President,Donald Trump,republican,3015,4593
+Crawford,18025,President,Other,NA,255,4593
+Daviess,18027,President,Hillary Clinton,democrat,1800,10768
+Daviess,18027,President,Donald Trump,republican,8545,10768
+Daviess,18027,President,Other,NA,423,10768
+Dearborn,18029,President,Hillary Clinton,democrat,4883,23987
+Dearborn,18029,President,Donald Trump,republican,18113,23987
+Dearborn,18029,President,Other,NA,991,23987
+Decatur,18031,President,Hillary Clinton,democrat,2121,11127
+Decatur,18031,President,Donald Trump,republican,8490,11127
+Decatur,18031,President,Other,NA,516,11127
+DeKalb,18033,President,Hillary Clinton,democrat,3942,16902
+DeKalb,18033,President,Donald Trump,republican,12054,16902
+DeKalb,18033,President,Other,NA,906,16902
+Delaware,18035,President,Hillary Clinton,democrat,18153,45123
+Delaware,18035,President,Donald Trump,republican,24263,45123
+Delaware,18035,President,Other,NA,2707,45123
+Dubois,18037,President,Hillary Clinton,democrat,5389,19984
+Dubois,18037,President,Donald Trump,republican,13365,19984
+Dubois,18037,President,Other,NA,1230,19984
+Elkhart,18039,President,Hillary Clinton,democrat,20740,65630
+Elkhart,18039,President,Donald Trump,republican,41867,65630
+Elkhart,18039,President,Other,NA,3023,65630
+Fayette,18041,President,Hillary Clinton,democrat,2252,9530
+Fayette,18041,President,Donald Trump,republican,6839,9530
+Fayette,18041,President,Other,NA,439,9530
+Floyd,18043,President,Hillary Clinton,democrat,13945,37425
+Floyd,18043,President,Donald Trump,republican,21432,37425
+Floyd,18043,President,Other,NA,2048,37425
+Fountain,18045,President,Hillary Clinton,democrat,1476,7492
+Fountain,18045,President,Donald Trump,republican,5662,7492
+Fountain,18045,President,Other,NA,354,7492
+Franklin,18047,President,Hillary Clinton,democrat,1969,11013
+Franklin,18047,President,Donald Trump,republican,8669,11013
+Franklin,18047,President,Other,NA,375,11013
+Fulton,18049,President,Hillary Clinton,democrat,1960,8374
+Fulton,18049,President,Donald Trump,republican,6010,8374
+Fulton,18049,President,Other,NA,404,8374
+Gibson,18051,President,Hillary Clinton,democrat,3721,15484
+Gibson,18051,President,Donald Trump,republican,11081,15484
+Gibson,18051,President,Other,NA,682,15484
+Grant,18053,President,Hillary Clinton,democrat,7010,25312
+Grant,18053,President,Donald Trump,republican,17008,25312
+Grant,18053,President,Other,NA,1294,25312
+Greene,18055,President,Hillary Clinton,democrat,2929,13801
+Greene,18055,President,Donald Trump,republican,10277,13801
+Greene,18055,President,Other,NA,595,13801
+Hamilton,18057,President,Hillary Clinton,democrat,57263,154256
+Hamilton,18057,President,Donald Trump,republican,87404,154256
+Hamilton,18057,President,Other,NA,9589,154256
+Hancock,18059,President,Hillary Clinton,democrat,8904,36181
+Hancock,18059,President,Donald Trump,republican,25074,36181
+Hancock,18059,President,Other,NA,2203,36181
+Harrison,18061,President,Hillary Clinton,democrat,4783,18558
+Harrison,18061,President,Donald Trump,republican,12943,18558
+Harrison,18061,President,Other,NA,832,18558
+Hendricks,18063,President,Hillary Clinton,democrat,22600,75559
+Hendricks,18063,President,Donald Trump,republican,48337,75559
+Hendricks,18063,President,Other,NA,4622,75559
+Henry,18065,President,Hillary Clinton,democrat,5124,20155
+Henry,18065,President,Donald Trump,republican,13895,20155
+Henry,18065,President,Other,NA,1136,20155
+Howard,18067,President,Hillary Clinton,democrat,11215,36843
+Howard,18067,President,Donald Trump,republican,23675,36843
+Howard,18067,President,Other,NA,1953,36843
+Huntington,18069,President,Hillary Clinton,democrat,3506,16043
+Huntington,18069,President,Donald Trump,republican,11649,16043
+Huntington,18069,President,Other,NA,888,16043
+Jackson,18071,President,Hillary Clinton,democrat,3843,17573
+Jackson,18071,President,Donald Trump,republican,12859,17573
+Jackson,18071,President,Other,NA,871,17573
+Jasper,18073,President,Hillary Clinton,democrat,3329,13378
+Jasper,18073,President,Donald Trump,republican,9382,13378
+Jasper,18073,President,Other,NA,667,13378
+Jay,18075,President,Hillary Clinton,democrat,1889,7986
+Jay,18075,President,Donald Trump,republican,5697,7986
+Jay,18075,President,Other,NA,400,7986
+Jefferson,18077,President,Hillary Clinton,democrat,4326,13544
+Jefferson,18077,President,Donald Trump,republican,8546,13544
+Jefferson,18077,President,Other,NA,672,13544
+Jennings,18079,President,Hillary Clinton,democrat,2364,11150
+Jennings,18079,President,Donald Trump,republican,8224,11150
+Jennings,18079,President,Other,NA,562,11150
+Johnson,18081,President,Hillary Clinton,democrat,17318,66500
+Johnson,18081,President,Donald Trump,republican,45456,66500
+Johnson,18081,President,Other,NA,3726,66500
+Knox,18083,President,Hillary Clinton,democrat,3772,15516
+Knox,18083,President,Donald Trump,republican,11077,15516
+Knox,18083,President,Other,NA,667,15516
+Kosciusko,18085,President,Hillary Clinton,democrat,6313,32084
+Kosciusko,18085,President,Donald Trump,republican,23935,32084
+Kosciusko,18085,President,Other,NA,1836,32084
+LaGrange,18087,President,Hillary Clinton,democrat,2080,9566
+LaGrange,18087,President,Donald Trump,republican,7025,9566
+LaGrange,18087,President,Other,NA,461,9566
+Lake,18089,President,Hillary Clinton,democrat,116935,201205
+Lake,18089,President,Donald Trump,republican,75625,201205
+Lake,18089,President,Other,NA,8645,201205
+LaPorte,18091,President,Hillary Clinton,democrat,19798,45203
+LaPorte,18091,President,Donald Trump,republican,22687,45203
+LaPorte,18091,President,Other,NA,2718,45203
+Lawrence,18093,President,Hillary Clinton,democrat,4210,19152
+Lawrence,18093,President,Donald Trump,republican,14035,19152
+Lawrence,18093,President,Other,NA,907,19152
+Madison,18095,President,Hillary Clinton,democrat,18595,53909
+Madison,18095,President,Donald Trump,republican,32376,53909
+Madison,18095,President,Other,NA,2938,53909
+Marion,18097,President,Hillary Clinton,democrat,212899,362372
+Marion,18097,President,Donald Trump,republican,130360,362372
+Marion,18097,President,Other,NA,19113,362372
+Marshall,18099,President,Hillary Clinton,democrat,4798,18082
+Marshall,18099,President,Donald Trump,republican,12288,18082
+Marshall,18099,President,Other,NA,996,18082
+Martin,18101,President,Hillary Clinton,democrat,881,4809
+Martin,18101,President,Donald Trump,republican,3697,4809
+Martin,18101,President,Other,NA,231,4809
+Miami,18103,President,Hillary Clinton,democrat,2766,13482
+Miami,18103,President,Donald Trump,republican,9975,13482
+Miami,18103,President,Other,NA,741,13482
+Monroe,18105,President,Hillary Clinton,democrat,34216,58454
+Monroe,18105,President,Donald Trump,republican,20592,58454
+Monroe,18105,President,Other,NA,3646,58454
+Montgomery,18107,President,Hillary Clinton,democrat,3362,15156
+Montgomery,18107,President,Donald Trump,republican,11059,15156
+Montgomery,18107,President,Other,NA,735,15156
+Morgan,18109,President,Hillary Clinton,democrat,6040,31280
+Morgan,18109,President,Donald Trump,republican,23674,31280
+Morgan,18109,President,Other,NA,1566,31280
+Newton,18111,President,Hillary Clinton,democrat,1404,5795
+Newton,18111,President,Donald Trump,republican,4077,5795
+Newton,18111,President,Other,NA,314,5795
+Noble,18113,President,Hillary Clinton,democrat,3904,16890
+Noble,18113,President,Donald Trump,republican,12198,16890
+Noble,18113,President,Other,NA,788,16890
+Ohio,18115,President,Hillary Clinton,democrat,686,2921
+Ohio,18115,President,Donald Trump,republican,2118,2921
+Ohio,18115,President,Other,NA,117,2921
+Orange,18117,President,Hillary Clinton,democrat,2048,8192
+Orange,18117,President,Donald Trump,republican,5803,8192
+Orange,18117,President,Other,NA,341,8192
+Owen,18119,President,Hillary Clinton,democrat,1946,8557
+Owen,18119,President,Donald Trump,republican,6153,8557
+Owen,18119,President,Other,NA,458,8557
+Parke,18121,President,Hillary Clinton,democrat,1441,6582
+Parke,18121,President,Donald Trump,republican,4863,6582
+Parke,18121,President,Other,NA,278,6582
+Perry,18123,President,Hillary Clinton,democrat,3062,8055
+Perry,18123,President,Donald Trump,republican,4556,8055
+Perry,18123,President,Other,NA,437,8055
+Pike,18125,President,Hillary Clinton,democrat,1297,5977
+Pike,18125,President,Donald Trump,republican,4398,5977
+Pike,18125,President,Other,NA,282,5977
+Porter,18127,President,Hillary Clinton,democrat,33676,77190
+Porter,18127,President,Donald Trump,republican,38832,77190
+Porter,18127,President,Other,NA,4682,77190
+Posey,18129,President,Hillary Clinton,democrat,3521,12467
+Posey,18129,President,Donald Trump,republican,8404,12467
+Posey,18129,President,Other,NA,542,12467
+Pulaski,18131,President,Hillary Clinton,democrat,1327,5459
+Pulaski,18131,President,Donald Trump,republican,3854,5459
+Pulaski,18131,President,Other,NA,278,5459
+Putnam,18133,President,Hillary Clinton,democrat,3356,14715
+Putnam,18133,President,Donald Trump,republican,10637,14715
+Putnam,18133,President,Other,NA,722,14715
+Randolph,18135,President,Hillary Clinton,democrat,2446,10458
+Randolph,18135,President,Donald Trump,republican,7517,10458
+Randolph,18135,President,Other,NA,495,10458
+Ripley,18137,President,Hillary Clinton,democrat,2471,12810
+Ripley,18137,President,Donald Trump,republican,9806,12810
+Ripley,18137,President,Other,NA,533,12810
+Rush,18139,President,Hillary Clinton,democrat,1525,7214
+Rush,18139,President,Donald Trump,republican,5292,7214
+Rush,18139,President,Other,NA,397,7214
+St. Joseph,18141,President,Hillary Clinton,democrat,52252,110060
+St. Joseph,18141,President,Donald Trump,republican,52021,110060
+St. Joseph,18141,President,Other,NA,5787,110060
+Scott,18143,President,Hillary Clinton,democrat,2642,9101
+Scott,18143,President,Donald Trump,republican,6074,9101
+Scott,18143,President,Other,NA,385,9101
+Shelby,18145,President,Hillary Clinton,democrat,4247,17994
+Shelby,18145,President,Donald Trump,republican,12718,17994
+Shelby,18145,President,Other,NA,1029,17994
+Spencer,18147,President,Hillary Clinton,democrat,2861,9979
+Spencer,18147,President,Donald Trump,republican,6572,9979
+Spencer,18147,President,Other,NA,546,9979
+Starke,18149,President,Hillary Clinton,democrat,2489,9226
+Starke,18149,President,Donald Trump,republican,6367,9226
+Starke,18149,President,Other,NA,370,9226
+Steuben,18151,President,Hillary Clinton,democrat,3744,14566
+Steuben,18151,President,Donald Trump,republican,10133,14566
+Steuben,18151,President,Other,NA,689,14566
+Sullivan,18153,President,Hillary Clinton,democrat,2113,8559
+Sullivan,18153,President,Donald Trump,republican,6138,8559
+Sullivan,18153,President,Other,NA,308,8559
+Switzerland,18155,President,Hillary Clinton,democrat,930,3699
+Switzerland,18155,President,Donald Trump,republican,2558,3699
+Switzerland,18155,President,Other,NA,211,3699
+Tippecanoe,18157,President,Hillary Clinton,democrat,27282,62515
+Tippecanoe,18157,President,Donald Trump,republican,30768,62515
+Tippecanoe,18157,President,Other,NA,4465,62515
+Tipton,18159,President,Hillary Clinton,democrat,1587,7510
+Tipton,18159,President,Donald Trump,republican,5589,7510
+Tipton,18159,President,Other,NA,334,7510
+Union,18161,President,Hillary Clinton,democrat,715,3291
+Union,18161,President,Donald Trump,republican,2445,3291
+Union,18161,President,Other,NA,131,3291
+Vanderburgh,18163,President,Hillary Clinton,democrat,28530,72507
+Vanderburgh,18163,President,Donald Trump,republican,40496,72507
+Vanderburgh,18163,President,Other,NA,3481,72507
+Vermillion,18165,President,Hillary Clinton,democrat,2081,6939
+Vermillion,18165,President,Donald Trump,republican,4513,6939
+Vermillion,18165,President,Other,NA,345,6939
+Vigo,18167,President,Hillary Clinton,democrat,15931,39818
+Vigo,18167,President,Donald Trump,republican,21937,39818
+Vigo,18167,President,Other,NA,1950,39818
+Wabash,18169,President,Hillary Clinton,democrat,3018,13468
+Wabash,18169,President,Donald Trump,republican,9821,13468
+Wabash,18169,President,Other,NA,629,13468
+Warren,18171,President,Hillary Clinton,democrat,839,3930
+Warren,18171,President,Donald Trump,republican,2898,3930
+Warren,18171,President,Other,NA,193,3930
+Warrick,18173,President,Hillary Clinton,democrat,9086,29589
+Warrick,18173,President,Donald Trump,republican,19113,29589
+Warrick,18173,President,Other,NA,1390,29589
+Washington,18175,President,Hillary Clinton,democrat,2636,11382
+Washington,18175,President,Donald Trump,republican,8209,11382
+Washington,18175,President,Other,NA,537,11382
+Wayne,18177,President,Hillary Clinton,democrat,8322,25579
+Wayne,18177,President,Donald Trump,republican,16028,25579
+Wayne,18177,President,Other,NA,1229,25579
+Wells,18179,President,Hillary Clinton,democrat,2586,13185
+Wells,18179,President,Donald Trump,republican,10005,13185
+Wells,18179,President,Other,NA,594,13185
+White,18181,President,Hillary Clinton,democrat,2590,10053
+White,18181,President,Donald Trump,republican,6893,10053
+White,18181,President,Other,NA,570,10053
+Whitley,18183,President,Hillary Clinton,democrat,3379,15623
+Whitley,18183,President,Donald Trump,republican,11358,15623
+Whitley,18183,President,Other,NA,886,15623
