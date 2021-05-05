@@ -241,51 +241,13 @@ mod1.1.3 <- glm(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~
         RARELY:olderprop:TrmpProp:`2013 code`, family = binomial, 
         data = big_data3)
 summary(mod1.1.3)
+Anova(mod1.1.3)
 drop1(mod1.1.3, test = "Chi")
 plot(mod1.1.3)
 bptest(mod1.1.3)
 
 
-# remove olderprop:TrmpVote added olderprop:TrmpProp:2013code
-mod1.1 <- glm(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~ olderprop + 
-    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote.x + 
-    `Older (65 plus).x` + RARELY + COVID_COUNT.x + olderprop:`2013 code` + olderprop:TrmpProp +
-    olderprop:RARELY + TrmpProp:RARELY + olderprop:TrmpProp:RARELY + olderprop:TrmpProp:`2013 code`, 
-    family = binomial, data = big_data3)
-
-summary(mod1.1)
-Anova(mod1.1)
-
-# remove COVID_COUNT
-mod1.2 <- glm(formula = cbind(COVID_DEATHS.x, pop2021 - COVID_DEATHS.x) ~ olderprop + 
-    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
-    `Older (65 plus)` + RARELY + olderprop:`2013 code` + olderprop:TrmpProp +
-    olderprop:RARELY + TrmpProp:RARELY + olderprop:TrmpProp:RARELY + olderprop:TrmpProp:`2013 code`, 
-    family = binomial, data = big_data3)
-
-summary(mod1.2)
-Anova(mod1.2)
-#AIC went up - put COVID_COUNT back in
-
-## Drop RARELY from interactions and see
-mod1.3 <- glm(formula = cbind(COVID_DEATHS.x, pop2021 - COVID_DEATHS.x) ~ olderprop + 
-    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
-    `Older (65 plus)` + RARELY + COVID_COUNT + olderprop:`2013 code` + olderprop:TrmpProp +
-    olderprop:TrmpProp:`2013 code`, 
-    family = binomial, data = big_data3)
-
-summary(mod1.3)
-Anova(mod1.3)
-
-mod1.4 <- glm(formula = cbind(COVID_DEATHS.x, pop2021 - COVID_DEATHS.x) ~ olderprop + 
-    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
-    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
-    family = binomial, data = big_data3)
-
-summary(mod1.4)
-Anova(mod1.4)
-
-# remove ClintProp
+## From earlier - nice, but not as good as mod1.1.3
 mod1.5 <- glm(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~ olderprop + 
     `2013 code` + prop_cases + TrmpProp + ClintVote.x + 
     `Older (65 plus).x` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
@@ -346,9 +308,9 @@ lrtstat <- as.numeric(2*(logLik(mod2.0.3)-logLik(mod2.0.2)))
 pvalue <- 1-pchisq()
 
 
-mod2 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021 - COVID_DEATHS.x) ~ offset(log(pop2021)) + olderprop + 
-    prop_cases + TrmpProp + ClintVote + 
-    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY + (1|COUNTY_NAME) + (1|`2013 code`),
+mod2 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~ offset(log(pop2021.x)) + olderprop + 
+    prop_cases + TrmpProp + ClintVote.x + 
+    `Older (65 plus).x` + RARELY + olderprop*TrmpProp*RARELY + (1|COUNTY_NAME) + (1|`2013 code`),
     family = binomial, data = big_data3)
 
 Anova(mod2)
