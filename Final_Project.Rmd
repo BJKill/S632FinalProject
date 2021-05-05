@@ -245,6 +245,8 @@ Anova(mod1.1.3)
 drop1(mod1.1.3, test = "Chi")
 plot(mod1.1.3)
 bptest(mod1.1.3)
+## Mod1.1.3 is our final Binomial model with only Fixed Effects
+## AIC = 807.03
 
 
 ## From earlier - nice, but not as good as mod1.1.3
@@ -288,11 +290,16 @@ summary(mod2.0)
 sumary(mod2.0)
 confint(mod2.0, method = "boot")
 
-mod2.0.1 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021 - COVID_DEATHS.x) ~ 1+(1|`2013 code`), 
+mod2.0.1 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~ 1+(1|`2013 code`), 
                 family = binomial, data = big_data3)
 
 sumary(mod2.0.1)
 summary(mod2.0.1)
+confint(mod2.0.1, method = "boot")
+
+mod2.both <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x - COVID_DEATHS.x) ~ 1+(1|`2013 code`), 
+                family = binomial, data = big_data3)
+
 lrtstat <- as.numeric(2*(logLik(mod2.0.1)-logLik(mod0)))
 pvalue <- 1-pchisq(lrtstat, 1)
 pvalue
@@ -341,7 +348,7 @@ summary(mod3)
 ```     
 
 
-# Poisson? Fucking around
+# Poisson Model instead of Binomial Model?
 ```{r}
 mod5 <- glm(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop + 
     `2013 code` + prop_cases + TrmpProp + ClintVote + 
@@ -352,88 +359,1237 @@ Anova(mod5)
 
 plot(mod5)
 
-# if 2013 code is a RE, it can't be a FE or interraction
-mod6 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + TrmpProp + ClintVote + 
-    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY +
-    (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+mod5.1 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x + COVID_TEST.x + NEVER + SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.x + TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x + fully_vaccinated.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod6)
+summary(mod5.1)
+Anova(mod5.1)
+drop1(mod5.1, test = "Chi")
 
-# drop all interactions
-mod7 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + TrmpProp + ClintVote + 
-    `Older (65 plus)` + RARELY + 
-    (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+# drop alldosesadministered.y
+mod5.2 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x + COVID_TEST.x + NEVER + SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.x + TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x + fully_vaccinated.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod7)
-Anova(mod7)
+summary(mod5.2)
+Anova(mod5.2)
+drop1(mod5.2, test = "Chi")
 
-## drop RARELY
-mod8 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + TrmpProp + ClintVote + 
-    `Older (65 plus)` + 
-    (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+# drop fullyvaccinated.x
+mod5.3 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x + COVID_TEST.x + NEVER + SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.x + TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod8)
-Anova(mod8)
+summary(mod5.3)
+Anova(mod5.3)
+drop1(mod5.3, test = "Chi")
 
-## drop ClintVote & TrmpProp
-mod9 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases +  `Older (65 plus)` + 
-    (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+# drop covidtest.x
+mod5.4 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x + NEVER + SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.x + TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod9)
+summary(mod5.4)
+Anova(mod5.4)
+drop1(mod5.4, test = "Chi")
 
-## drop Older 65+
-mod10 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+# drop totalvote.x
+mod5.5 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x + NEVER + SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod10)
+summary(mod5.5)
+Anova(mod5.5)
+drop1(mod5.5, test = "Chi")
 
-## Add-in other variables dropped from FE models
-mod11 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME) +
-    COVID_COUNT + COVID_TEST + NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS +
-    all_doses_administered + fully_vaccinated,
+# remove Never
+mod5.6 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x +SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +  all_doses_administered.x +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod11)
+summary(mod5.6)
+Anova(mod5.6)
+drop1(mod5.6, test = "Chi")
 
-# Drop mask-wearing
-mod12 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME) +
-    COVID_COUNT + COVID_TEST + all_doses_administered + fully_vaccinated,
+# drop all_doses_administered.x
+mod5.7 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x +SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +
+      `2013 code`+ `Older (65 plus).x` + olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod12)
+summary(mod5.7)
+Anova(mod5.7)
+drop1(mod5.7, test = "Chi")
 
-# drop covid test
-mod13 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME) +
-    COVID_COUNT+ all_doses_administered + fully_vaccinated,
+# remove Older.x
+mod5.8 <- glm(formula = COVID_DEATHS.x ~ pop2021.x + pop2021.y +
+      prop_cases + COVID_COUNT.x +SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +
+      `2013 code`+ olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod13)
+summary(mod5.8)
+Anova(mod5.8)
+drop1(mod5.8, test = "Chi")
 
-# drop covid_count
-mod14 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021)) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME) +
-    log(all_doses_administered) + log(fully_vaccinated),
+# remove pop2021.y
+mod5.9 <- glm(formula = COVID_DEATHS.x ~ pop2021.x +
+      prop_cases + COVID_COUNT.x +SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.x + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +
+      `2013 code`+ olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod14)
+summary(mod5.9)
+Anova(mod5.9)
+drop1(mod5.9, test = "Chi")
 
-
-anova(mod14, mod10, test = "Chi")
-
-# drop vaccine info, and default back to mod10
-summary(mod10)
-
-
-mod15 <- glmer(formula = COVID_DEATHS.x ~ log(pop2021) + olderprop +
-    prop_cases + (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+# remove clintVote.x
+mod5.10 <- glm(formula = COVID_DEATHS.x ~ pop2021.x +
+      prop_cases + COVID_COUNT.x +SOMETIMES + 
+      COVID_COUNT.y + COVID_TEST.y + fully_vaccinated.y +
+      `Older (65 plus).y` + TrmpVote.x + TrmpVote.y + ClintVote.y +
+      TotalVote.y + 
+      FREQUENTLY + ALWAYS +
+      `2013 code`+ olderprop*TrmpProp*RARELY*`2013 code`,
     family = poisson, data = big_data3)
-summary(mod15)
+summary(mod5.10)
+Anova(mod5.10)
+drop1(mod5.10, test = "Chi")
+## Mod5.10 is our final Poisson model with only Fixed Effects
+## AIC = 798.23
 ```
 
 
+
+## Poisson Mixed Effects
+```{r}
+## if 2013 code is a RE, it can't be a FE or interraction. Without population
+## as predictor, need to use `offset()` to make it poisson proportions and not
+## counts
+big_data3$LOCATION_ID <- as.factor(big_data3$LOCATION_ID)
+
+mod6.0 <- glm(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 1, family = poisson,
+                data = big_data3)
+summary(mod6.0)
+
+mod6.0.1 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 
+                (1|LOCATION_ID) + (1|`2013 code`), family = poisson,
+                data = big_data3)
+summary(mod6.0.1)
+confint(mod6.0.1, method = "boot")
+
+
+mod6.0.3 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 
+                (1|LOCATION_ID), family = poisson,
+                data = big_data3)
+
+summary(mod6.0.3)
+
+mod6.0.4 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 
+                (1|`2013 code`), family = poisson,
+                data = big_data3)
+summary(mod6.0.4)
+
+mod6.0.5 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 
+                (1|`2013 code`) + (1|`2013 code`:LOCATION_ID), 
+                family = poisson, data = big_data3)
+summary(mod6.0.5)
+
+# test Location_ID as a random effect
+y <- simulate(mod6.0)
+lrt.vec <-  numeric(1000)
+set.seed(123)
+for(i in 1:1000) {
+  y <- unlist(simulate(mod6.0))
+  b0 <- glm(y~ offset(log(pop2021.x)) + 1, family = poisson, data = big_data3)
+  b1 <- glmer(y~ offset(log(pop2021.x)) + 1+(1|LOCATION_ID), family = poisson, data = big_data3)
+  lrt.vec[i] <- as.numeric(2*(logLik(b1)-logLik(b0)))
+}
+lrtstat <- as.numeric(2*(logLik(mod6.0.3)-logLik(mod6.0))); lrtstat
+summary(lrt.vec)
+phat <- mean(lrt.vec > lrtstat)
+se_phat <- sqrt(phat*(1-phat)/1000)
+c(phat, se_phat)
+# pvalue = 0. Reject H0: sigma2_LID = 0
+
+
+# test 2013 code as a random effect
+y <- simulate(mod6.0)
+lrt.vec <-  numeric(1000)
+set.seed(123)
+for(i in 1:1000) {
+  y <- unlist(simulate(mod6.0))
+  b0 <- glm(y~ offset(log(pop2021.x)) + 1, family = poisson, data = big_data3)
+  b1 <- glmer(y~ offset(log(pop2021.x)) + 1+(1|`2013 code`), family = poisson, data = big_data3)
+  lrt.vec[i] <- as.numeric(2*(logLik(b1)-logLik(b0)))
+}
+lrtstat <- as.numeric(2*(logLik(mod6.0.4)-logLik(mod6.0))); lrtstat
+summary(lrt.vec)
+phat <- mean(lrt.vec > lrtstat)
+se_phat <- sqrt(phat*(1-phat)/1000)
+c(phat, se_phat)
+# pvalue = 0. Reject H0: sigma2_2013code = 0
+
+
+# test to see if LID is significant in a model that contains 2013 code
+y <- simulate(mod6.0.4)
+lrt.vec <-  numeric(1000)
+set.seed(123)
+for(i in 1:1000) {
+  y <- unlist(simulate(mod6.0.4))
+  b0 <- glmer(y~ offset(log(pop2021.x)) + 1 + (1|`2013 code`), 
+              family = poisson, data = big_data3)
+  b1 <- glmer(y~ offset(log(pop2021.x)) + 1 + (1|`2013 code`) + 
+              (1|LOCATION_ID), family = poisson, data = big_data3)
+  lrt.vec[i] <- as.numeric(2*(logLik(b1)-logLik(b0)))
+}
+lrtstat <- as.numeric(2*(logLik(mod6.0.1)-logLik(mod6.0.4))); lrtstat
+summary(lrt.vec)
+phat <- mean(lrt.vec > lrtstat)
+se_phat <- sqrt(phat*(1-phat)/1000)
+c(phat, se_phat)
+## 95% conf p-value in [0.115 +- .02]. We are 95% confident that the p-value is
+## more than 0.05, so we will fail to reject H0, and conclude that LOCATION_ID
+## as a separate RE is not significant when added to a model already containing
+## 2013 code.
+
+
+# Test nested effect of LOCATIONID instead of RE?
+y <- simulate(mod6.0.4)
+lrt.vec <-  numeric(1000)
+set.seed(123)
+for(i in 1:1000) {
+  y <- unlist(simulate(mod6.0.4))
+  b0 <- glmer(y~ offset(log(pop2021.x)) + 1 + (1|`2013 code`) + (1|LOCATION_ID), 
+              family = poisson, data = big_data3)
+  b1 <- glmer(y~ offset(log(pop2021.x)) + 1 + (1|`2013 code`) +
+                (1|`2013 code`:LOCATION_ID), family = poisson, data = big_data3)
+  lrt.vec[i] <- as.numeric(2*(logLik(b1)-logLik(b0)))
+}
+lrtstat <- as.numeric(2*(logLik(mod6.0.5)-logLik(mod6.0.4))); lrtstat
+summary(lrt.vec)
+phat <- mean(lrt.vec > lrtstat)
+se_phat <- sqrt(phat*(1-phat)/1000)
+c(phat, se_phat)
+# P-value basically 0. Reject H0: sigma2_LID = 0
+
+# we are going to keep nested effects of 2013code:Location_ID
+
+mod6.1 <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 1 + (1|`2013 code`) + 
+                  (1|`2013 code`:LOCATION_ID), 
+                family = poisson, data = big_data3)
+summary(mod6.1)
+
+
+
+mod6 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod6)
+Anova(mod6)
+drop1(mod6, test = "Chi")
+
+# interaction term caused error in offset model. May try to add in later.
+mod6.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod6.off)
+Anova(mod6.off)
+drop1(mod6.off, test = "Chi")
+
+# drop covidtest.x
+mod7 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod7)
+Anova(mod7)
+drop1(mod7, test = "Chi")
+
+#drop alldosesadministered.y from mod7
+mod8 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod8)
+Anova(mod8)
+drop1(mod8, test = "Chi")
+
+# drop pop2021.x from mod8
+mod9 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod9)
+Anova(mod9)
+drop1(mod9, test = "Chi")
+
+# drop totalvote.y
+mod10 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod10)
+Anova(mod10)
+drop1(mod10, test = "Chi")
+
+## drop 3-way interraction
+mod11 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod11)
+Anova(mod11)
+drop1(mod11, test = "Chi")
+
+# drop TrmpVote.x
+mod12 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod12)
+Anova(mod12)
+drop1(mod12, test = "Chi")
+
+# drop totalvote.x
+mod13 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x  + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod13)
+Anova(mod13)
+drop1(mod13, test = "Chi")
+
+# drop covidcount.x
+mod14 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x  + all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod14)
+Anova(mod14)
+drop1(mod14, test = "Chi")
+
+# drop older.x
+mod15 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x  + all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod15)
+Anova(mod15)
+drop1(mod15, test = "Chi")
+
+# drop Trmpvote.y
+mod16 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        `Older (65 plus).y` + ClintVote.y +
+        ClintVote.x  + all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod16)
+Anova(mod16)
+drop1(mod16, test = "Chi")
+
+# drop older.y
+mod17 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod17)
+Anova(mod17)
+drop1(mod17, test = "Chi")
+
+# drope fullyvaccinated.x
+mod18 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod18)
+Anova(mod18)
+drop1(mod18, test = "Chi")
+
+# drop sometimes
+mod19 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod19)
+Anova(mod19)
+drop1(mod19, test = "Chi")
+
+# drop always
+mod20 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + FREQUENTLY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod20)
+Anova(mod20)
+drop1(mod20, test = "Chi")
+
+# drop frequently
+mod21 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +
+        NEVER + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod21)
+Anova(mod21)
+drop1(mod21, test = "Chi")
+
+#drop never
+mod22 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod22)
+Anova(mod22)
+drop1(mod22, test = "Chi")
+
+# drop olderprop:Trmpprop
+mod23 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y + COVID_TEST.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod23)
+Anova(mod23)
+drop1(mod23, test = "Chi")
+
+# drop covidtest.y
+mod24 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y +  
+        ClintVote.y + ClintVote.x  + all_doses_administered.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod24)
+Anova(mod24)
+drop1(mod24, test = "Chi")
+
+# drop alldoses.x
+mod25 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y +  
+        ClintVote.y + ClintVote.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod25)
+Anova(mod25)
+drop1(mod25, test = "Chi")
+
+# drop clintvote.x
+mod26 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + COVID_COUNT.y +  
+        ClintVote.y + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod26)
+Anova(mod26)
+drop1(mod26, test = "Chi")
+
+# drop covidcount.y
+mod27 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp +  
+        ClintVote.y + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = poisson, 
+        data = big_data3)
+summary(mod27)
+Anova(mod27)
+drop1(mod27, test = "Chi")
+
+# drop rarely:olderprop
+mod28 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + ClintVote.y + fully_vaccinated.y +
+        RARELY:TrmpProp, family = poisson, data = big_data3)
+summary(mod28)
+Anova(mod28)
+drop1(mod28, test = "Chi")
+### MOD28 final model for Poisson Random Effects - not offset
+
+# drop prop_cases
+mod29 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y + RARELY + 
+        olderprop + TrmpProp + ClintProp + ClintVote.y + fully_vaccinated.y +
+        RARELY:TrmpProp, family = poisson, data = big_data3)
+summary(mod29)
+Anova(mod29)
+drop1(mod28, test = "Chi")
+
+# drop prop_cases
+mod30 <- glmer(formula = COVID_DEATHS.x ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +  
+        olderprop + ClintProp + ClintVote.y + fully_vaccinated.y,
+        family = poisson, data = big_data3)
+summary(mod30)
+Anova(mod30)
+drop1(mod30, test = "Chi")
+
+# drop clinprop
+mod31 <- glmer(formula = COVID_DEATHS.x ~  1 +  (1|`2013 code`) +
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +  
+        olderprop + ClintVote.y + fully_vaccinated.y,
+        family = poisson, data = big_data3)
+summary(mod31)
+Anova(mod31)
+drop1(mod31, test = "Chi")
+confint(mod31, method = "boot")
+
+# drop 2013 code as RE
+mod32 <- glmer(formula = COVID_DEATHS.x ~  1 +  
+        (1|`2013 code`:LOCATION_ID) +  pop2021.y +  
+        olderprop + ClintVote.y + fully_vaccinated.y,
+        family = poisson, data = big_data3)
+summary(mod32)
+Anova(mod31)
+drop1(mod31, test = "Chi")
+
+
+
+### OFFSET by pop - remove covidtest.x
+mod7.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod7.off)
+Anova(mod7.off)
+drop1(mod7.off, test = "Chi")
+
+
+# drop TrmpProp
+mod8.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod8.off)
+Anova(mod8.off)
+drop1(mod8.off, test = "Chi")
+
+# drop olderprop
+mod9.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod9.off)
+Anova(mod9.off)
+drop1(mod9.off, test = "Chi")
+
+# drop older.x
+mod10.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod10.off)
+Anova(mod10.off)
+drop1(mod10.off, test = "Chi")
+
+# drop alldoses.y
+mod11.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod11.off)
+Anova(mod11.off)
+drop1(mod11.off, test = "Chi")
+
+# drop clintvote.x
+mod12.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod12.off)
+Anova(mod12.off)
+drop1(mod12.off, test = "Chi")
+
+# drop covidtest.y
+mod13.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        TrmpVote.x + TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod13.off)
+Anova(mod13.off)
+drop1(mod13.off, test = "Chi")
+
+# drop trumpvote.x
+mod14.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        TotalVote.x + COVID_COUNT.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod14.off)
+Anova(mod14.off)
+drop1(mod14.off, test = "Chi")
+
+# drop covidcount.x
+mod15.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod15.off)
+Anova(mod15.off)
+drop1(mod15.off, test = "Chi")
+
+# drop fullyvaccinated.x
+mod16.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod16.off)
+Anova(mod16.off)
+drop1(mod16.off, test = "Chi")
+
+# drop clintvote.y
+mod17.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        ClintProp + COVID_COUNT.y + 
+        `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod17.off)
+Anova(mod17.off)
+drop1(mod17.off, test = "Chi")
+
+# drop clintprop
+mod18.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod18.off)
+Anova(mod18.off)
+drop1(mod18.off, test = "Chi")
+
+# drop RARELY
+mod19.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod19.off)
+Anova(mod19.off)
+drop1(mod19.off, test = "Chi")
+
+# drop SOMETIMES
+mod20.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + FREQUENTLY + ALWAYS + prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod20.off)
+Anova(mod20.off)
+drop1(mod20.off, test = "Chi")
+
+
+# drop ALWAYS
+mod21.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        NEVER + FREQUENTLY + prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod21.off)
+Anova(mod21.off)
+drop1(mod21.off, test = "Chi")
+
+# drop NEVER
+mod22.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        FREQUENTLY + prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod22.off)
+Anova(mod22.off)
+drop1(mod22.off, test = "Chi")
+
+# drop FREQUENTLY
+mod23.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        prop_cases + 
+        COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + all_doses_administered.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod23.off)
+Anova(mod23.off)
+drop1(mod23.off, test = "Chi")
+
+
+# drop alldoses.x
+mod24.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        prop_cases + COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        TotalVote.x + fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod24.off)
+Anova(mod24.off)
+drop1(mod24.off, test = "Chi")
+
+# drop totalvote.x
+mod25.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        prop_cases + COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod25.off)
+Anova(mod25.off)
+drop1(mod25.off, test = "Chi")
+
+### Mod25.off is our Final Mixed effects model with offset Poisson.
+### AIC = 823.3
+
+# dropped RE of 2013code
+mod26.off <- glmer(formula = COVID_DEATHS.x ~ offset(log(pop2021.x)) + 
+        (1|`2013 code`:LOCATION_ID) + 
+        prop_cases + COVID_COUNT.y + `Older (65 plus).y` + TrmpVote.y + TotalVote.y +
+        fully_vaccinated.y, 
+        family = poisson, data = big_data3)
+summary(mod26.off)
+Anova(mod26.off)
+drop1(mod26.off, test = "Chi")
+```
+
+
+## Binomial Mixed Effects
+
+```{r}
+modbm <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = binomial, data = big_data3)
+summary(modbm)
+Anova(modbm)
+
+# drop covidtests.x
+modbm2 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = binomial, data = big_data3)
+summary(modbm2)
+Anova(modbm2)
+
+# drop doses.y
+modbm3 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = binomial, data = big_data3)
+summary(modbm3)
+Anova(modbm3)
+
+# drop pop2021.x
+modbm4 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = binomial, data = big_data3)
+summary(modbm4)
+Anova(modbm4)
+
+# drop trumpprop
+modbm5 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, family = binomial, data = big_data3)
+summary(modbm5)
+Anova(modbm5)
+
+# drop 3-way
+modbm6 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm6)
+Anova(modbm6)
+
+# drop trumpvote.y
+modbm7 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm7)
+Anova(modbm7)
+
+# drop clintvote.x
+modbm8 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TrmpVote.x + TotalVote.x + COVID_COUNT.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm8)
+Anova(modbm8)
+
+# drop covidcount.x
+modbm9 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TrmpVote.x + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm9)
+Anova(modbm9)
+
+# drop older.x
+modbm10 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TrmpVote.x + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm10)
+Anova(modbm10)
+
+# drop trmpvote.x
+modbm11 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm11)
+Anova(modbm11)
+
+
+# drop SOMETIMES
+modbm12 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + FREQUENTLY + ALWAYS + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm12)
+Anova(modbm12)
+
+# drop ALWAYS
+modbm13 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + FREQUENTLY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm13)
+Anova(modbm13)
+
+
+# drop FREQUENTLY
+modbm14 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp - RARELY:olderprop:TrmpProp, family = binomial, data = big_data3)
+summary(modbm14)
+Anova(modbm14)
+
+# drop olderprop:trmpprop
+modbm15 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + prop_cases + 
+        olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + `Older (65 plus).y` + ClintVote.y +
+        TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm15)
+Anova(modbm15)
+
+
+
+# drop older.y
+modbm16 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        NEVER + RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + ClintVote.y + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm16)
+Anova(modbm16)
+
+
+# drop NEVER
+modbm17 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + ClintVote.y + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm17)
+Anova(modbm17)
+drop1(modbm17, test = "Chi")
+
+# drop fullyvaccinated.x
+modbm18 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + ClintVote.y + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm18)
+Anova(modbm18)
+drop1(modbm18, test = "Chi")
+
+#drop covidtest.y
+modbm19 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + ClintVote.y + TotalVote.x  +
+        all_doses_administered.x + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm19)
+Anova(modbm19)
+drop1(modbm19, test = "Chi")
+
+# alldoses.x
+modbm20 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + ClintVote.y + TotalVote.x  + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm20)
+Anova(modbm20)
+drop1(modbm20, test = "Chi")
+
+#drop totalvote.x
+modbm21 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + ClintVote.y + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm21)
+Anova(modbm21)
+drop1(modbm21, test = "Chi")
+
+# drop covidcount.y
+modbm22 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        ClintVote.y + fully_vaccinated.y +
+        RARELY:olderprop + RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm22)
+Anova(modbm22)
+drop1(modbm22, test = "Chi")
+
+# drop rarely:olderprop
+modbm23 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + pop2021.y +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        ClintVote.y + fully_vaccinated.y +
+        RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm23)
+Anova(modbm23)
+drop1(modbm23, test = "Chi")
+
+# drop pop2021.y
+modbm24 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        ClintVote.y + fully_vaccinated.y +
+        RARELY:TrmpProp, family = binomial, data = big_data3)
+summary(modbm24)
+Anova(modbm24)
+drop1(modbm24, test = "Chi")
+
+# drop Rarely:TrmpProp
+modbm25 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) +
+        RARELY + prop_cases + olderprop + TrmpProp + ClintProp + 
+        ClintVote.y + fully_vaccinated.y, family = binomial, data = big_data3)
+summary(modbm25)
+Anova(modbm25)
+drop1(modbm25, test = "Chi")
+
+# drop RARELY
+modbm26 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + prop_cases + olderprop + TrmpProp + ClintProp + 
+        ClintVote.y + fully_vaccinated.y, family = binomial, data = big_data3)
+summary(modbm26)
+Anova(modbm26)
+drop1(modbm26, test = "Chi")
+
+# drop Clintvote.y
+modbm27 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + prop_cases + olderprop + TrmpProp + ClintProp + 
+        fully_vaccinated.y, family = binomial, data = big_data3)
+summary(modbm27)
+Anova(modbm27)
+drop1(modbm27, test = "Chi")
+
+# drop clintprop
+modbm28 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + prop_cases + olderprop + TrmpProp + 
+        fully_vaccinated.y, family = binomial, data = big_data3)
+summary(modbm28)
+Anova(modbm28)
+drop1(modbm28, test = "Chi")
+
+# drop prop_cases
+modbm29 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + olderprop + TrmpProp + 
+        fully_vaccinated.y, family = binomial, data = big_data3)
+summary(modbm29)
+Anova(modbm29)
+drop1(modbm29, test = "Chi")
+add1(modbm29, scope = ~ pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, test = "Chisq")
+
+# add back in alldoses.y
+modbm30 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + olderprop + TrmpProp + 
+        fully_vaccinated.y + all_doses_administered.y, family = binomial, data = big_data3)
+summary(modbm30)
+Anova(modbm30)
+drop1(modbm30, test = "Chi")
+
+# remove trumpprop
+modbm31 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + olderprop  + 
+        fully_vaccinated.y + all_doses_administered.y, family = binomial, data = big_data3)
+summary(modbm31)
+Anova(modbm31)
+drop1(modbm31, test = "Chi")
+add1(modbm31, scope = ~ pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, test = "Chisq")
+
+# add in prop.cases
+modbm32 <- glmer(formula = cbind(COVID_DEATHS.x, pop2021.x-COVID_DEATHS.x) ~  1 + (1|`2013 code`) + 
+        (1|`2013 code`:LOCATION_ID) + olderprop  + prop_cases +
+        fully_vaccinated.y + all_doses_administered.y, family = binomial, data = big_data3)
+summary(modbm32)
+Anova(modbm32)
+drop1(modbm32, test = "Chi")
+add1(modbm32, scope = ~ pop2021.x + pop2021.y +
+        NEVER + RARELY + SOMETIMES + FREQUENTLY + ALWAYS + prop_cases + 
+        `Older (65 plus).x` + olderprop + TrmpProp + ClintProp + 
+        COVID_COUNT.y + COVID_TEST.y + all_doses_administered.y + 
+        `Older (65 plus).y` + ClintVote.y + TrmpVote.y + TotalVote.y +
+        ClintVote.x + TrmpVote.x + TotalVote.x + COVID_COUNT.x + COVID_TEST.x +
+        all_doses_administered.x + fully_vaccinated.x + fully_vaccinated.y +
+        RARELY*olderprop*TrmpProp, test = "Chisq")
+### Modbm32 is final Binomial Mixed Model.
+### AIC = 821.8
+```
 
 
 
