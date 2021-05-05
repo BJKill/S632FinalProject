@@ -15,7 +15,10 @@ library(lme4)
 library(ggplot2)
 library(RLRsim)
 library(faraway)
+library(alr4)
 ```
+
+## Import data and whittle down to initial model.
 
 ```{r, tidy=TRUE}
 # read in data and re-name FIPS variable for merging.
@@ -118,6 +121,7 @@ mod0 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ 1, data = big_data3, fam
 mod0.1 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ . -LOCATION_ID  - COUNTY_NAME - prop_death - OtherProp - OtherVote, data = big_data3, family = binomial)
 summary(mod0.1)
 step(mod0, scope = list(lower = mod0, upper = mod0.1), direction = "both")
+anova(mod0.1, test = "Chi")
 
 mod0.2 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
     `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
@@ -130,139 +134,165 @@ drop1(mod0.2, test = "Chi")
 
 plot(mod0.2)
 (expvact <- data.frame(LOCATION_ID = big_data3$LOCATION_ID, COUNTY_NAME = big_data3$COUNTY_NAME, Predicted_Deaths = round(mod0.2$fitted.values*big_data3$pop2021,2), Actual_Deaths = big_data3$COVID_DEATHS))
-
 ```
 
-
+## Look for interactions
 
 ```{r, tidy=TRUE}
-mod1 <- glm(cbind(COVID_DEATHS, pop2021-COVID_DEATHS) ~ . -LOCATION_ID - COVID_COUNT - COVID_TEST - COUNTY_NAME - prop_death - TotalVote - OtherProp - `Older (65 plus)` - fully_vaccinated - OtherVote, data = big_data3, family = binomial)
+mod1 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + COVID_COUNT + olderprop:`2013 code` + olderprop:TrmpProp +
+    olderprop:TrmpVote + olderprop:RARELY + TrmpProp:RARELY + olderprop:TrmpProp:RARELY, 
+    family = binomial, data = big_data3)
+
 summary(mod1)
-sumary(mod1)
-step(mod1, direction = "backward")
-drop1(mod1)
-plot(fitted(mod1),residuals(mod1)); abline(0,0)
-qqnorm(residuals(mod1)); qqline(residuals(mod1))
+Anova(mod1)
+# remove olderprop:TrmpVote added olderprop:TrmpProp:2013code
+mod1.1 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + COVID_COUNT + olderprop:`2013 code` + olderprop:TrmpProp +
+    olderprop:RARELY + TrmpProp:RARELY + olderprop:TrmpProp:RARELY + olderprop:TrmpProp:`2013 code`, 
+    family = binomial, data = big_data3)
 
-# keep everything? maybe over-dispersed?
-sigma2 <- sum(residuals(mod1, type = "pearson")^2)/(92-13)
-summary(mod1, dispersion = sigma2)
-drop1(mod1, scale = sigma2, test = "F")
+summary(mod1.1)
+Anova(mod1.1)
 
+# remove COVID_COUNT
+mod1.2 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop:`2013 code` + olderprop:TrmpProp +
+    olderprop:RARELY + TrmpProp:RARELY + olderprop:TrmpProp:RARELY + olderprop:TrmpProp:`2013 code`, 
+    family = binomial, data = big_data3)
 
-step(mod0, scope = list(lower = mod0, upper = mod1), direction = "forward")
-step(mod0, scope = list(lower = mod0, upper = mod1), direction = "both")
+summary(mod1.2)
+Anova(mod1.2)
+#AIC went up - put COVID_COUNT back in
+
+## Drop RARELY from interactions and see
+mod1.3 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + COVID_COUNT + olderprop:`2013 code` + olderprop:TrmpProp +
+    olderprop:TrmpProp:`2013 code`, 
+    family = binomial, data = big_data3)
+
+summary(mod1.3)
+Anova(mod1.3)
+
+mod1.4 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
+    family = binomial, data = big_data3)
+
+summary(mod1.4)
+Anova(mod1.4)
+
+# remove ClintProp
+mod1.5 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
+    family = binomial, data = big_data3)
+
+summary(mod1.5)
+Anova(mod1.5)
+drop1(mod1.5, test = "Chi")
 ```
 
+
+
+Try sum contrasts as resolution for NA's?
+```{r, tidy=TRUE}
+big_data4 <- big_data3
+contrasts(big_data4$`2013 code`) <- contr.sum(6)
+
+mod1.6 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
+    family = binomial, data = big_data4)
+
+summary(mod1.6)
+```
+
+
+
+
+Add county name and 2013 code as random effects. Nest county inside code.
 
 ```{r, tidy=TRUE}
-mod2 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    prop_cases + TrmpProp + ClintProp + SOMETIMES + TrmpVote + 
-    RARELY, family = binomial, data = big_data3)
-summary(mod2)
-
-mod3 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    prop_cases + ClintVote + TrmpProp + ClintProp + SOMETIMES + 
-    TrmpVote + RARELY + all_doses_administered + NEVER, family = binomial, 
-    data = big_data3)
-summary(mod3)
-
-anova(mod2, mod3, test = "Chi")
-```
-H0: Small model is fine
-H1: Larger model is better
-
-Fail to reject H0.  Stick with `mod2`
-
-
-```{r}
-plot(mod2)
-anova(mod0, mod2, test = "Chi")
-summary(mod2)
-```
-A couple high-leverage counties, but residuals are normally distributed, homoscedatic, with no obvious patterns, leading us to believe the model is a decent fit. Our model is better than the Null, so keep it.
-
-The model fits sufficiently well. The best predictors of COVID death counts in an Indiana county appear to be the proportion of the population that is older than 65, the proportion of people in the county to test positive, and the number of people in the county who voted for Donald Trump in the 2016 election.
-
-
-
-
-```{r, tidy=TRUE}
-
-
-big_data3$cntySize <- numeric(length = 92)
-big_data3$cntySize[which(big_data3$pop2021 < 20000)] <- "Small"
-big_data3$cntySize[which((big_data3$pop2021 > 20000)&(big_data3$pop2021 < 60000))] <- "Medium"
-big_data3$cntySize[which(big_data3$pop2021 > 60000)] <- "Large"
-big_data3$cntySize <- as.factor(big_data3$cntySize)
-
-big_data3$cntyPol <- numeric(length = 92)
-big_data3$cntyPol[which(big_data3$TrmpProp > 0.6)] <- "StrongRep"
-big_data3$cntyPol[which((big_data3$TrmpProp < 0.6)&(big_data3$TrmpProp > 0.5))] <- "LeanRep"
-big_data3$cntyPol[which(big_data3$ClintProp > 0.6)] <- "StrongDem"
-big_data3$cntyPol[which((big_data3$ClintProp < 0.6)&(big_data3$ClintProp > 0.5))] <- "LeanDem"
-big_data3$cntyPol[which((big_data3$ClintProp < 0.5)&(big_data3$TrmpProp < 0.5))] <- "Independent"
-big_data3$cntyPol <- as.factor(big_data3$cntyPol)
-
 big_data3$COUNTY_NAME <- as.factor(big_data3$COUNTY_NAME)
-```
 
+mod2.0 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1+(1|COUNTY_NAME), 
+                family = binomial, data = big_data3)
+summary(mod2.0)
+sumary(mod2.0)
+confint(mod2.0, method = "boot")
 
-
-```{r, tidy=TRUE, eval=FALSE}
-mod4 <- glm(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    prop_cases + TrmpProp + ClintProp + SOMETIMES + TrmpVote + 
-    RARELY + cntySize + cntyPol, family = binomial, data = big_data3)
-summary(mod4)
-step(mod0, scope = list(lower = mod0, upper = mod4), direction = "both")
-
-mod5 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    #prop_cases + TrmpVote + SOMETIMES + cntySize + TrmpProp + 
-    #ClintProp, family = binomial, data = big_data3)
-summary(mod5)
-drop1(mod5, test = "Chi")
-anova(mod2, mod5, test = "Chi")
-plot(mod5)
-```
-
-Improved model by adding cntySize factor variable and removing RARELY.
-
-```{r, tidy=TRUE, eval=FALSE}
-# predicted and actual death tolls by county ID#
-cbind(big_data3$LOCATION_ID, round(mod5$fitted.values*big_data3$pop2021,2), big_data3$COVID_DEATHS)
-```
-
-
-```{r, tidy=TRUE}
-mod6 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    prop_cases + SOMETIMES + cntySize + TrmpProp + 
-    ClintProp + (1|COUNTY_NAME), family = binomial, data = big_data3,
-    control=glmerControl(optimizer="bobyqa"))
-summary(mod6)
-
-mod6.0 <- glmer(cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1 + (1|COUNTY_NAME),
+mod2.0.1 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1+(1|`2013 code`), 
                 family = binomial, data = big_data3)
 
-anova(mod6.0, mod6)
-drop1(mod6, test = "Chi")
-qqnorm(residuals(mod6));qqline(residuals(mod6))
+sumary(mod2.0.1)
+summary(mod2.0.1)
+lrtstat <- as.numeric(2*(logLik(mod2.0.1)-logLik(mod0)))
+pvalue <- 1-pchisq(lrtstat, 1)
+pvalue
 
-1-pchisq(abs(deviance(mod6)-deviance(mod2)), abs(df.residual(mod6)-df.residual(mod2)))
-## model with random effects is better fit than model without random effects
+mod2.0.2 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1 + (1|COUNTY_NAME)
+                + (1|`2013 code`), family = binomial, data = big_data3)
 
-mod7 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
-    prop_cases + cntySize + TrmpProp + 
-    ClintProp + (1|COUNTY_NAME), family = binomial, data = big_data3,
-    control=glmerControl(optimizer="bobyqa"))
+mod2.0.3 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ 1 + (1|COUNTY_NAME)
+                + (1|`2013 code`) + (1|`2013 code`:COUNTY_NAME), 
+                family = binomial, data = big_data3)
 
-summary(mod7)
-
-anova(mod7, mod6)
+lrtstat <- as.numeric(2*(logLik(mod2.0.3)-logLik(mod2.0.2)))
+pvalue <- 1-pchisq()
 
 
-drop1(mod7, test = "Chi")
-## keep mod7
+mod2 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ offset(log(pop2021)) + olderprop + 
+    prop_cases + TrmpProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY + (1|COUNTY_NAME) + (1|`2013 code`),
+    family = binomial, data = big_data3)
+
+Anova(mod2)
+drop1(mod2, test = "Chi")
+
+## Remove interactions completely
+mod2.1 <- glmer(formula = cbind(COVID_DEATHS, pop2021 - COVID_DEATHS) ~ olderprop + 
+    prop_cases + TrmpProp + ClintVote + `Older (65 plus)` + RARELY + (1|COUNTY_NAME) + (1|`2013 code`),
+    family = binomial, data = big_data3)
+
+Anova(mod2)
+drop1(mod2, test = "Chi")
+step(mod0, scope = list(lower = mod0, upper = mod2), direction = "both")
+
+
+
+summary(mod2)
+sumary(mod2)
+confint(mod2, method = "boot")
+
+drop1(mod2, test = "Chi")
+
+```     
+
+
+# Poisson? Fucking around
+```{r}
+mod5 <- glm(formula = COVID_DEATHS ~ offset(log(pop2021)) + olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code`,
+    family = poisson, data = big_data3)
+summary(mod5)
+Anova(mod5)
+
+plot(mod5)
+
+
+mod6 <- glm(formula = COVID_DEATHS ~ offset(log(pop2021)) + olderprop + 
+    `2013 code` + prop_cases + TrmpProp + ClintVote + 
+    `Older (65 plus)` + RARELY + olderprop*TrmpProp*RARELY*`2013 code` +
+    (1|COUNTY_NAME) +(1|`2013 code`) + (1|`2013 code`:COUNTY_NAME),
+    family = poisson, data = big_data3)
 ```
+
 
 
 
